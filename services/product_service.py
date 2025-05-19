@@ -76,9 +76,11 @@ class ProductService:
                 {'$set': {'stock': int(new_stock)}}
             )
             
-            # Verificar si el stock llegó a 0 y enviar notificación
+            # Verificar el nivel de stock y enviar notificación
             if new_stock == 0:
-                notify_low_stock(branch_id, product['name'])
+                notify_low_stock(branch_id, product['name'], 'agotado')
+            elif new_stock <= 5:
+                notify_low_stock(branch_id, product['name'], 'bajo')
 
             return result.modified_count > 0
         except Exception as e:
@@ -112,9 +114,11 @@ class ProductService:
                 {'$set': {'stock': int(new_stock)}}
             )
             
-            # Verificar si el stock llegó a 0 y enviar notificación
+            # Verificar el nivel de stock y enviar notificación
             if new_stock == 0:
-                notify_low_stock(branch_id, product['name'])
+                notify_low_stock(branch_id, product['name'], 'agotado')
+            elif new_stock <= 5:
+                notify_low_stock(branch_id, product['name'], 'bajo')
             
             return result.modified_count > 0
         except Exception as e:

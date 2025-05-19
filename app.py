@@ -5,6 +5,7 @@ from routes.branch_routes import branch_blueprint
 from routes.sales_routes import sales_blueprint
 from routes.stock_routes import stock_blueprint
 from routes.sse_routes import sse_blueprint
+from routes.currency_routes import currency_blueprint
 import os
 import logging
 
@@ -36,6 +37,7 @@ app.register_blueprint(branch_blueprint, url_prefix='/api/branches')
 app.register_blueprint(sales_blueprint, url_prefix='/api/sales')
 app.register_blueprint(stock_blueprint, url_prefix='/api/stock')
 app.register_blueprint(sse_blueprint, url_prefix='/api/notifications')
+app.register_blueprint(currency_blueprint, url_prefix='/api/currency')
 
 if __name__ == '__main__':
     logger.info("Iniciando servidor Flask...")

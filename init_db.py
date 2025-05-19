@@ -31,7 +31,7 @@ sample_products = [
 ]
 
 # Productos de ejemplo para la sucursal1
-branch_products = [
+branch1_products = [
     {
         "id": "4",
         "name": "Mouse Gaming",
@@ -52,6 +52,28 @@ branch_products = [
     }
 ]
 
+# Productos de ejemplo para la sucursal2
+branch2_products = [
+    {
+        "id": "6",
+        "name": "Tablet Samsung Galaxy",
+        "price": 349999,
+        "stock": 6,
+        "branch_id": "sucursal2",
+        "is_matriz": False,
+        "last_updated": datetime.utcnow()
+    },
+    {
+        "id": "7",
+        "name": "Auriculares Bluetooth",
+        "price": 89999,
+        "stock": 15,
+        "branch_id": "sucursal2",
+        "is_matriz": False,
+        "last_updated": datetime.utcnow()
+    }
+]
+
 def init_db():
     # Limpiar colección existente
     matriz_collection.delete_many({})
@@ -61,8 +83,13 @@ def init_db():
         product = Product.from_dict(product_data)
         matriz_collection.insert_one(product.to_dict())
     
-    # Insertar productos de la sucursal
-    for product_data in branch_products:
+    # Insertar productos de la sucursal 1
+    for product_data in branch1_products:
+        product = Product.from_dict(product_data)
+        matriz_collection.insert_one(product.to_dict())
+    
+    # Insertar productos de la sucursal 2
+    for product_data in branch2_products:
         product = Product.from_dict(product_data)
         matriz_collection.insert_one(product.to_dict())
     

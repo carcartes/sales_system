@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, url_for, current_app
 from services.sales_service import SalesService
 from services.product_service import ProductService
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 sales_blueprint = Blueprint('sales', __name__)
@@ -39,8 +40,8 @@ def create_sale():
         order_id = sales_service.generate_order_id()
         logger.info(f"Generated order ID: {order_id}")
         
-        # Crear transacción en Transbank
-        return_url = request.host_url.rstrip('/') + url_for('sales.confirm_sale')
+        # Crear transacción en Transbank - URL de retorno al frontend
+        return_url = "http://localhost:3000/sales/confirm"  # URL del frontend
         logger.info(f"Return URL: {return_url}")
         
         try:
@@ -83,9 +84,26 @@ def confirm_sale():
         if request.method == 'GET':
             token = request.args.get('token_ws')
             logger.info(f"Confirming sale with GET parameters: {request.args}")
+            
+            # Obtener datos de la venta pendiente del frontend
+            pending_sale = request.args.get('pending_sale')
+            if pending_sale:
+                try:
+                    pending_sale_data = json.loads(pending_sale)
+                    items = pending_sale_data.get('cart', [])
+                    branch_id = pending_sale_data.get('branch')
+                except json.JSONDecodeError:
+                    logger.error("Error decoding pending sale data")
+                    items = []
+                    branch_id = None
+            else:
+                items = []
+                branch_id = None
         else:
             data = request.json
             token = data.get('token_ws')
+            items = data.get('items', [])
+            branch_id = data.get('branch_id')
             logger.info(f"Confirming sale with POST data: {data}")
         
         if not token:
@@ -102,18 +120,15 @@ def confirm_sale():
                 sale_id = sales_service.register_sale({
                     'token': token,
                     'response': response,
-                    'items': request.args.get('items', []) if request.method == 'GET' else data.get('items', []),
-                    'branch_id': request.args.get('branch_id') if request.method == 'GET' else data.get('branch_id')
+                    'items': items,
+                    'branch_id': branch_id
                 })
                 
                 # Actualizar stock para cada item
-                items = request.args.get('items', []) if request.method == 'GET' else data.get('items', [])
-                branch_id = request.args.get('branch_id') if request.method == 'GET' else data.get('branch_id')
-                
                 for item in items:
                     product_service.update_stock_for_sale(
                         branch_id=branch_id,
-                        product_id=item['id'],
+                        product_id=item['product_id'],
                         quantity=item['quantity']
                     )
                 

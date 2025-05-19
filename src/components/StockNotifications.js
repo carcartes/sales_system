@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Snackbar, Alert } from '@mui/material';
+import { Snackbar, Alert, Box, Typography } from '@mui/material';
+import { Warning as WarningIcon, Error as ErrorIcon } from '@mui/icons-material';
 
 function StockNotifications() {
   const [notification, setNotification] = useState(null);
@@ -54,6 +55,33 @@ function StockNotifications() {
     setOpen(false);
   };
 
+  const getAlertProps = () => {
+    if (!notification) return { severity: 'info', icon: null };
+
+    switch (notification.stock_status) {
+      case 'agotado':
+        return {
+          severity: 'error',
+          icon: <ErrorIcon />,
+          title: '¡Stock Agotado!'
+        };
+      case 'bajo':
+        return {
+          severity: 'warning',
+          icon: <WarningIcon />,
+          title: '¡Stock Bajo!'
+        };
+      default:
+        return {
+          severity: 'info',
+          icon: null,
+          title: 'Notificación de Stock'
+        };
+    }
+  };
+
+  const alertProps = getAlertProps();
+
   return (
     <Snackbar
       open={open}
@@ -63,8 +91,9 @@ function StockNotifications() {
     >
       <Alert 
         onClose={handleClose} 
-        severity="warning" 
+        severity={alertProps.severity}
         variant="filled"
+        icon={alertProps.icon}
         sx={{ 
           width: '100%',
           '& .MuiAlert-message': {
@@ -72,7 +101,14 @@ function StockNotifications() {
           }
         }}
       >
-        {notification?.message}
+        <Box>
+          <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+            {alertProps.title}
+          </Typography>
+          <Typography variant="body2">
+            {notification?.message}
+          </Typography>
+        </Box>
       </Alert>
     </Snackbar>
   );
