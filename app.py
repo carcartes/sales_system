@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 app = Flask(__name__)
+app.config['DEBUG'] = True
 CORS(app, resources={
     r"/api/*": {
         "origins": ["http://localhost:3000"],  # Ajusta según tu frontend

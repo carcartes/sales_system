@@ -5,9 +5,7 @@ __pycache__/
 *.so
 .Python
 venv/
-ENV/
-env/
-.env
+
 *.log
 
 # Node

@@ -1,34 +1,36 @@
 import requests
 import os
-from config.mongodb import matriz_collection
+from config.mongodb import matriz_collection, stock_collection
 from models.product import Product
 from services.currency_service import currency_service
 from services.sse_service import notify_low_stock
+import base64
 
 class ProductService:
     def __init__(self):
         pass
 
     def get_branch_stock(self, branch_id, sort_by=None, sort_order=None):
-        """Obtiene stock y precio desde MongoDB con ordenamiento opcional"""
-        query = {'branch_id': branch_id}
-        sort_params = []
-        
-        # Validar y aplicar ordenamiento
-        if sort_by in ['stock', 'price']:
-            sort_direction = 1 if sort_order == 'asc' else -1
-            sort_params.append((sort_by, sort_direction))
-        
-        products = matriz_collection.find(query)
-        if sort_params:
-            products = products.sort(sort_params)
-        
-        # Convertir los productos y agregar precio en USD
+        """Obtiene productos y el stock real de la sucursal desde la colección stock"""
+        # Obtener todos los productos
+        products = list(matriz_collection.find({}))
+        # Obtener el stock de la sucursal para todos los productos
+        stock_map = {s['producto_id']: s['stock'] for s in stock_collection.find({"sucursal": branch_id})}
+        # Unir productos con su stock real
         product_list = []
         for p in products:
             product = Product.from_dict(p).to_dict()
+            # Codificar imagen a base64 si es binario
+            if product.get('imagen') and isinstance(product['imagen'], (bytes, bytearray)):
+                product['imagen'] = base64.b64encode(product['imagen']).decode('utf-8')
+            # Asignar el stock real de la sucursal (o 0 si no hay registro)
+            product['stock'] = stock_map.get(product['id'], 0)
             product['price_usd'] = currency_service.clp_to_usd(product['price'])
             product_list.append(product)
+        # Ordenar si corresponde
+        if sort_by in ['stock', 'price']:
+            reverse = sort_order == 'desc'
+            product_list.sort(key=lambda x: x.get(sort_by, 0), reverse=reverse)
         return product_list
 
     def get_matriz_stock(self, sort_by=None, sort_order=None):
@@ -49,6 +51,9 @@ class ProductService:
         product_list = []
         for p in products:
             product = Product.from_dict(p).to_dict()
+            # Codificar imagen a base64 si es binario
+            if product.get('imagen') and isinstance(product['imagen'], (bytes, bytearray)):
+                product['imagen'] = base64.b64encode(product['imagen']).decode('utf-8')
             product['price_usd'] = currency_service.clp_to_usd(product['price'])
             product_list.append(product)
         return product_list

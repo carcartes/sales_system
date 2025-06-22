@@ -37,11 +37,7 @@ def get_branch_stock(branch_id):
         sort_by = request.args.get('sort_by')  # 'price' o 'stock'
         sort_order = request.args.get('sort_order', 'asc')  # 'asc' o 'desc'
 
-        if branch_id == 'matriz':
-            stock = product_service.get_matriz_stock(sort_by, sort_order)
-        else:
-            stock = product_service.get_branch_stock(branch_id, sort_by, sort_order)
-        
+        stock = product_service.get_branch_stock(branch_id, sort_by, sort_order)
         return jsonify(stock)
     except Exception as e:
         return jsonify({'error': str(e)}), 500

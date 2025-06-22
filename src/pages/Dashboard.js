@@ -128,7 +128,10 @@ function Dashboard() {
     );
   }
 
-  const totalProducts = matrizStock.length + sucursal1Stock.length + sucursal2Stock.length;
+  // Calcular productos únicos por id (no duplicar por sucursal)
+  const allProducts = [...matrizStock, ...sucursal1Stock, ...sucursal2Stock];
+  const uniqueProductIds = new Set(allProducts.map(p => p.id));
+  const totalProducts = uniqueProductIds.size;
   const totalValue = calculateTotalValue(matrizStock) + 
                     calculateTotalValue(sucursal1Stock) + 
                     calculateTotalValue(sucursal2Stock);

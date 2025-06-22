@@ -7,6 +7,18 @@ function StockNotifications() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    // Al montar, revisa si hay una notificación reciente en localStorage
+    const stored = localStorage.getItem('stockNotification');
+    if (stored) {
+      const { notification, timestamp } = JSON.parse(stored);
+      if (Date.now() - timestamp < 15000) {
+        setNotification(notification);
+        setOpen(true);
+      } else {
+        localStorage.removeItem('stockNotification');
+      }
+    }
+
     console.log('Iniciando conexión SSE...');
     const eventSource = new EventSource('http://localhost:5000/api/notifications/stream');
 
@@ -27,6 +39,8 @@ function StockNotifications() {
         if (data.type === 'low_stock') {
           setNotification(data);
           setOpen(true);
+          // Persistir en localStorage con timestamp
+          localStorage.setItem('stockNotification', JSON.stringify({ notification: data, timestamp: Date.now() }));
         }
       } catch (error) {
         console.error('Error al procesar notificación:', error);
@@ -53,6 +67,7 @@ function StockNotifications() {
       return;
     }
     setOpen(false);
+    localStorage.removeItem('stockNotification');
   };
 
   const getAlertProps = () => {
@@ -85,7 +100,7 @@ function StockNotifications() {
   return (
     <Snackbar
       open={open}
-      autoHideDuration={6000}
+      autoHideDuration={15000}
       onClose={handleClose}
       anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
     >

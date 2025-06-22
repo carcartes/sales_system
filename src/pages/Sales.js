@@ -41,6 +41,7 @@ function Sales() {
   const [cart, setCart] = useState([]);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [loading, setLoading] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -136,15 +137,15 @@ function Sales() {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token_ws');
     if (token) {
+      setIsConfirming(true);
       const confirmPayment = async () => {
         try {
           setLoading(true);
-          setMessage({ type: 'info', text: 'Confirmando pago...' });
+          setMessage({ type: 'info', text: 'Procesando pago...' });
           const pendingSale = JSON.parse(sessionStorage.getItem('pendingSale'));
           if (!pendingSale) {
             throw new Error('No se encontró información de la venta');
           }
-
           // Confirmar la venta usando POST para enviar todos los datos necesarios
           const response = await axios.post('http://localhost:5000/api/sales/confirm', {
             token_ws: token,
@@ -155,32 +156,23 @@ function Sales() {
               price: item.price
             }))
           });
-
           if (response.data.status === 'success') {
-            // Guardar mensaje de éxito en sessionStorage
+            sessionStorage.removeItem('pendingSale');
             sessionStorage.setItem('saleMessage', JSON.stringify({
               type: 'success',
               text: 'Compra realizada con éxito. Stock actualizado.'
             }));
-            
-            // Limpiar el carrito y la venta pendiente
-            setCart([]);
-            sessionStorage.removeItem('pendingSale');
-            
-            // Redirigir a la página principal
-            window.location.replace('/');
-            return; // Importante: detener la ejecución aquí
+            setTimeout(() => {
+              window.location.href = '/';
+            }, 1000);
           } else {
-            throw new Error('Pago no autorizado');
+            setMessage({ type: 'error', text: response.data.message || 'Error al confirmar el pago.' });
           }
         } catch (error) {
-          console.error('Error confirming payment:', error);
-          setMessage({ 
-            type: 'error', 
-            text: 'Error al confirmar el pago. Por favor contacte a soporte.' 
-          });
+          setMessage({ type: 'error', text: error.response?.data?.error || error.message || 'Error al confirmar el pago.' });
         } finally {
           setLoading(false);
+          setIsConfirming(false);
         }
       };
       confirmPayment();
@@ -190,6 +182,20 @@ function Sales() {
   const handleRefresh = () => {
     fetchProducts();
   };
+
+  if (isConfirming || loading) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="60vh">
+          <CircularProgress sx={{ mb: 2 }} />
+          <Typography variant="h6">Procesando pago...</Typography>
+          {message.text && message.type === 'error' && (
+            <Alert severity={message.type} sx={{ mt: 2 }}>{message.text}</Alert>
+          )}
+        </Box>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>

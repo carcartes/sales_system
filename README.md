@@ -1,86 +1,73 @@
-# Sistema de Ventas con Flask
+# Sistema de Ventas e Inventario
 
-Sistema de ventas que integra múltiples sucursales y casa matriz, con gestión de stock, pagos con Transbank y notificaciones en tiempo real.
+Proyecto de ventas e inventario con Flask, React, MongoDB y microservicio gRPC.
 
-## Características
+## 🚀 Instrucciones Rápidas (Windows, CMD)
 
-- Consulta de stock y precios desde API externa para sucursales
-- Gestión de stock local para casa matriz con MongoDB
-- Conversión de precios a USD en tiempo real
-- Integración con Transbank para pagos
-- Notificaciones en tiempo real con Server-Sent Events (SSE)
-- Registro de ventas en MongoDB
-
-## Requisitos
-
-- Python 3.8+
-- MongoDB
-- Redis (para SSE)
-- Cuenta en Transbank
-- API Key para conversión de moneda
-
-## Instalación
-
-1. Clonar el repositorio
-2. Crear un entorno virtual:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # Linux/Mac
-   venv\Scripts\activate     # Windows
-   ```
-3. Instalar dependencias:
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. Configurar variables de entorno:
-   - Copiar `.env.example` a `.env`
-   - Completar las variables con tus credenciales
-
-## Uso
-
-1. Iniciar Redis:
-   ```bash
-   redis-server
-   ```
-
-2. Iniciar MongoDB:
-   ```bash
-   mongod
-   ```
-
-3. Iniciar la aplicación:
-   ```bash
-   python app.py
-   ```
-
-## Endpoints API
-
-### Sucursales
-- GET `/api/branches/<branch_id>/stock` - Obtener stock de una sucursal
-
-### Ventas
-- POST `/api/sales/create` - Crear nueva venta
-- POST `/api/sales/confirm` - Confirmar venta después del pago
-
-### Notificaciones
-- GET `/api/notifications/stream` - Stream SSE para notificaciones
-
-## Estructura del Proyecto
-
+### 1. Clona el repositorio
+```sh
+git clone https://github.com/carcartes/sales_system.git
+cd sales_system
 ```
-sales_system/
-├── app.py
-├── config/
-│   └── mongodb.py
-├── models/
-│   └── product.py
-├── routes/
-│   ├── branch_routes.py
-│   ├── sales_routes.py
-│   └── sse_routes.py
-├── services/
-│   ├── product_service.py
-│   ├── sales_service.py
-│   └── sse_service.py
-└── requirements.txt
-``` 
+
+### 2. Crea y activa el entorno virtual de Python
+```sh
+python -m venv venv
+venv\Scripts\activate
+```
+
+### 3. Instala las dependencias de Python
+```sh
+pip install -r requirements.txt
+```
+
+### 4. Instala las dependencias del frontend
+```sh
+cd src
+npm install
+cd ..
+```
+
+### 5. Asegúrate de que MongoDB esté corriendo
+- Solo abre MongoDB (por defecto en `localhost:27017`).
+
+### 6. (Opcional) Limpia la base de datos de productos
+```sh
+python init_db.py
+```
+
+### 7. Inicia el microservicio gRPC
+```sh
+cd grpc_server
+python server.py
+cd ..
+```
+*Déjalo abierto en una terminal.*
+
+### 8. Inicia el backend Flask
+```sh
+python app.py
+```
+*En otra terminal.*
+
+### 9. Inicia el frontend React
+```sh
+cd src
+npm start
+```
+*En otra terminal.*
+
+---
+
+## Acceso
+
+- **Frontend:** [http://localhost:3000](http://localhost:3000)
+- **Backend:** [http://localhost:5000](http://localhost:5000)
+
+---
+
+## Notas
+
+- El microservicio gRPC debe estar corriendo para poder agregar productos.
+- MongoDB debe estar iniciado antes de todo.
+- El sistema está listo para usar después de estos pasos. 

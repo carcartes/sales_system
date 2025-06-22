@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import Inventory from './pages/Inventory';
 import Sales from './pages/Sales';
 import StockNotifications from './components/StockNotifications';
+import AddProduct from './pages/AddProduct';
 
 const theme = createTheme({
   palette: {
@@ -31,6 +32,7 @@ function App() {
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/sales" element={<Sales />} />
           <Route path="/sales/confirm" element={<Sales />} />
+          <Route path="/agregar-producto" element={<AddProduct />} />
         </Routes>
       </Router>
     </ThemeProvider>

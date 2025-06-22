@@ -18,4 +18,5 @@ def get_database():
 # Inicializar colecciones
 db = get_database()
 matriz_collection = db['matriz']
-ventas_collection = db['ventas'] 
+ventas_collection = db['ventas']
+stock_collection = db['stock'] 

@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, url_for, current_app
 from services.sales_service import SalesService
 from services.product_service import ProductService
+from services.stock_service import StockService
 import logging
 import json
 
@@ -8,6 +9,7 @@ logger = logging.getLogger(__name__)
 sales_blueprint = Blueprint('sales', __name__)
 sales_service = SalesService()
 product_service = ProductService()
+stock_service = StockService()
 
 @sales_blueprint.route('/create', methods=['POST'])
 def create_sale():
@@ -123,15 +125,15 @@ def confirm_sale():
                     'items': items,
                     'branch_id': branch_id
                 })
-                
-                # Actualizar stock para cada item
+                # Actualizar stock para cada item usando StockService
                 for item in items:
-                    product_service.update_stock_for_sale(
-                        branch_id=branch_id,
-                        product_id=item['product_id'],
-                        quantity=item['quantity']
+                    ok = stock_service.decrement_stock(
+                        producto_id=item['product_id'],
+                        sucursal=branch_id,
+                        cantidad=item['quantity']
                     )
-                
+                    if not ok:
+                        logger.warning(f"No se pudo descontar stock para producto {item['product_id']} en sucursal {branch_id}")
                 logger.info(f"Sale confirmed and registered with ID: {sale_id}")
                 return jsonify({
                     'status': 'success',

@@ -15,7 +15,7 @@ def notify_low_stock(branch_id, product_name, stock_status):
     """Envía notificación de stock bajo o agotado mediante SSE"""
     try:
         status_messages = {
-            'bajo': f'¡Stock bajo! El producto {product_name} en {get_branch_name(branch_id)} tiene menos de 5 unidades.',
+            'bajo': f'¡Stock bajo! El producto {product_name} en {get_branch_name(branch_id)} tiene menos de 10 unidades.',
             'agotado': f'¡Stock agotado! El producto {product_name} en {get_branch_name(branch_id)} se ha agotado.'
         }
         

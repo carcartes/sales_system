@@ -22,6 +22,7 @@ import {
   Chip,
   Divider,
   Tooltip,
+  Dialog,
 } from '@mui/material';
 import {
   ArrowUpward as ArrowUpwardIcon,
@@ -31,6 +32,8 @@ import {
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
+import AddProduct from './AddProduct';
+import EditStockModal from './EditStockModal';
 
 function Inventory() {
   const [inventory, setInventory] = useState([]);
@@ -42,6 +45,10 @@ function Inventory() {
     order: 'asc'
   });
   const [loading, setLoading] = useState(false);
+  const [openAdd, setOpenAdd] = useState(false);
+  const [added, setAdded] = useState(false);
+  const [openEditStock, setOpenEditStock] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
     fetchInventory();
@@ -118,17 +125,41 @@ function Inventory() {
     fetchInventory();
   };
 
+  const handleOpenAdd = () => setOpenAdd(true);
+  const handleCloseAdd = () => {
+    setOpenAdd(false);
+    if (added) {
+      fetchInventory();
+      setAdded(false);
+    }
+  };
+
+  const handleOpenEditStock = (product) => {
+    setSelectedProduct(product);
+    setOpenEditStock(true);
+  };
+  const handleCloseEditStock = () => {
+    setOpenEditStock(false);
+    setSelectedProduct(null);
+    fetchInventory();
+  };
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 0 }}>
           <InventoryIcon sx={{ mr: 1, verticalAlign: 'middle' }} /> Gestión de Inventario
         </Typography>
-        <Tooltip title="Actualizar inventario">
-          <IconButton onClick={handleRefresh} color="primary">
-            <RefreshIcon />
-          </IconButton>
-        </Tooltip>
+        <Box>
+          <Button variant="contained" color="primary" onClick={handleOpenAdd} sx={{ mr: 2 }}>
+            + Agregar Producto
+          </Button>
+          <Tooltip title="Actualizar inventario">
+            <IconButton onClick={handleRefresh} color="primary">
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
       </Box>
 
       {message.text && (
@@ -165,6 +196,7 @@ function Inventory() {
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell>Imagen</TableCell>
                 <TableCell>Producto</TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => handleSort('price')}>
@@ -179,7 +211,6 @@ function Inventory() {
                   </Box>
                 </TableCell>
                 <TableCell>Estado</TableCell>
-                <TableCell>Actualizar Stock</TableCell>
                 <TableCell>Acciones</TableCell>
               </TableRow>
             </TableHead>
@@ -193,6 +224,13 @@ function Inventory() {
               ) : (
                 inventory.map((product) => (
                   <TableRow key={product.id}>
+                    <TableCell>
+                      {product.imagen ? (
+                        <img src={`data:image/png;base64,${product.imagen}`} alt={product.name} style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 4 }} />
+                      ) : (
+                        <Box sx={{ width: 48, height: 48, bgcolor: '#eee', borderRadius: 4 }} />
+                      )}
+                    </TableCell>
                     <TableCell>{product.name}</TableCell>
                     <TableCell>
                       <Typography variant="body1" gutterBottom>
@@ -211,24 +249,13 @@ function Inventory() {
                       />
                     </TableCell>
                     <TableCell>
-                      <TextField
-                        type="number"
-                        size="small"
-                        value={updateQuantity[product.id] || ''}
-                        onChange={(e) => handleQuantityChange(product.id, e.target.value)}
-                        placeholder="Nueva cantidad"
-                        sx={{ width: 110 }}
-                      />
-                    </TableCell>
-                    <TableCell>
                       <Button
-                        variant="contained"
+                        variant="outlined"
                         color="primary"
-                        onClick={() => handleUpdateStock(product.id)}
-                        disabled={!updateQuantity[product.id]}
-                        sx={{ minWidth: 110 }}
+                        size="small"
+                        onClick={() => handleOpenEditStock(product)}
                       >
-                        Actualizar
+                        Asignar stock
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -238,6 +265,18 @@ function Inventory() {
           </Table>
         </TableContainer>
       </Paper>
+
+      <Dialog open={openAdd} onClose={handleCloseAdd} maxWidth="sm" fullWidth>
+        <Box p={2}>
+          <AddProduct onAdded={(msg) => {
+            setOpenAdd(false);
+            setMessage({ type: 'success', text: msg || 'Producto agregado correctamente' });
+            fetchInventory();
+          }} />
+        </Box>
+      </Dialog>
+
+      <EditStockModal open={openEditStock} onClose={handleCloseEditStock} producto={selectedProduct} />
     </Container>
   );
 }
