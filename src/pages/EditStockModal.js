@@ -41,6 +41,15 @@ const EditStockModal = ({ open, onClose, producto }) => {
     setLoading(true);
     setError('');
     setSuccess('');
+    // Validación: no permitir valores negativos
+    for (const suc of SUCURSALES) {
+      const value = parseInt(stock[suc.key]);
+      if (value < 0) {
+        setError('No se permite asignar stock negativo.');
+        setLoading(false);
+        return;
+      }
+    }
     try {
       for (const suc of SUCURSALES) {
         await axios.post('http://localhost:5000/api/stock/set', {

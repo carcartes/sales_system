@@ -14,7 +14,10 @@ stock_service = StockService()
 def get_all_stock():
     try:
         product_service = ProductService()
-        stock = product_service.get_stock()
+        branch_id = request.args.get('sucursal_id')
+        if not branch_id:
+            return jsonify({"error": "Falta el parámetro sucursal_id"}), 400
+        stock = product_service.get_branch_stock(branch_id)
         return jsonify(stock), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
